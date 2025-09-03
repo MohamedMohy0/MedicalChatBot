@@ -2,9 +2,12 @@ import pandas as pd
 import numpy as np
 from sentence_transformers import SentenceTransformer
 import faiss
-from langchain_ollama import OllamaLLM
 from sklearn.metrics.pairwise import cosine_similarity
 import streamlit as st
+
+# ----------------------------
+# 0. إعداد الصفحة
+# ----------------------------
 st.set_page_config(page_title="شات بوت طبي", page_icon="🤖", layout="centered")
 
 # ----------------------------
@@ -42,9 +45,23 @@ def load_embeddings():
 embed_model, embeddings, index = load_embeddings()
 
 # ----------------------------
-# 3. الموديل
+# 3. اختيار الموديل (Ollama أو HuggingFace)
 # ----------------------------
-llm = OllamaLLM(model="llama3.2")
+USE_OLLAMA = False  # 🔄 غيرها لـ True لو هتشغل محلي مع Ollama
+
+if USE_OLLAMA:
+    from langchain_ollama import OllamaLLM
+    llm = OllamaLLM(model="llama3.2")
+else:
+    from langchain_huggingface import HuggingFaceEndpoint
+    HF_TOKEN = st.secrets.get("HF_TOKEN", None)  # ضيف HF_TOKEN في Streamlit secrets
+    if not HF_TOKEN:
+        st.error("⚠️ لازم تضيف HF_TOKEN في Streamlit secrets علشان يشتغل على Cloud.")
+    llm = HuggingFaceEndpoint(
+        repo_id="mistralai/Mistral-7B-Instruct-v0.2",
+        task="text-generation",
+        huggingfacehub_api_token=HF_TOKEN
+    )
 
 # ----------------------------
 # 4. دالة الرد
@@ -95,7 +112,7 @@ for msg in st.session_state["messages"]:
 
 # إدخال سؤال جديد
 if query := st.chat_input("🧑‍⚕️ اكتب سؤالك هنا"):
-    # عرض رسالة المستخدم
+    # رسالة المستخدم
     st.session_state["messages"].append({"role": "user", "content": query})
     with st.chat_message("user"):
         st.markdown(query)
