@@ -5,6 +5,7 @@ This project allows you to query Arabic medical data and receive concise, helpfu
 
 > ⚠️ **Note:** The dataset included is minimal and in Arabic. It is intended for demonstration purposes only. For production, you should replace it with a more comprehensive dataset.
 
+
 ## Features
 - Query medical data in Arabic.
 - Combines **retrieval-based search** and **generative AI** responses.
